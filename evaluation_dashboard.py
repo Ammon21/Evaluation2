@@ -22,7 +22,7 @@ def show_evaluation_dashboard():
     with col1:
         st.image('logo.png', width=80)
     with col2:
-        st.markdown('<div class="header">Teachers Evaluation Dashboard</div>', unsafe_allow_html=True)
+        st.markdown('<div class="header">Teachers Evaluation Dashboard II</div>', unsafe_allow_html=True)
 
     teacher_list = df['Teacher'].unique()
     teacher_to_analyze = st.selectbox('Select a Teacher', teacher_list, key="teacher_select")
