@@ -5,7 +5,7 @@ import pandas as pd
 def show_teacher_ranking():
     st.title("Teacher Ranking & Analysis")
 # Load the dataset
-    df = pd.read_csv('eval.csv', encoding='cp1252')
+    df = pd.read_csv('eval2.csv', encoding='cp1252')
 
     # Custom CSS for beautiful table and page design
     st.markdown("""
