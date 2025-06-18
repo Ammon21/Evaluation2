@@ -5,7 +5,7 @@ def show_evaluation_dashboard():
     st.title("Lebawi International Academy")
 
     # Load the dataset from CSV
-    df = pd.read_csv('eval2.csv', encoding='cp1252')
+    df = pd.read_csv('eval3.csv', encoding='cp1252')
 
     # Create a stylish header
     st.markdown("""

@@ -1,16 +1,16 @@
+
 import streamlit as st
 import pandas as pd
 
-
 def show_teacher_ranking():
     st.title("Teacher Ranking & Analysis")
-# Load the dataset
-    df = pd.read_csv('eval2.csv', encoding='cp1252')
+
+    # Load the dataset
+    df = pd.read_csv('eval3.csv', encoding='cp1252')
 
     # Custom CSS for beautiful table and page design
     st.markdown("""
         <style>
-            /* Main Page Style */
             .main-title {
                 font-size: 36px;
                 font-weight: bold;
@@ -18,8 +18,6 @@ def show_teacher_ranking():
                 color: #0D47A1;
                 margin-bottom: 10px;
             }
-
-            /* Subheader */
             .subheader {
                 font-size: 24px;
                 font-weight: bold;
@@ -28,15 +26,11 @@ def show_teacher_ranking():
                 border-bottom: 2px solid #0D47A1;
                 padding-bottom: 5px;
             }
-
-            /* Dropdown Titles */
             .stSelectbox label {
                 font-weight: bold;
                 color: #0D47A1;
                 font-size: 16px;
             }
-
-            /* Fancy Table Styling */
             table {
                 width: 100%;
                 border-collapse: collapse;
@@ -82,47 +76,42 @@ def show_teacher_ranking():
 
     # Calculate average score for selected question per teacher
     teacher_scores = df.groupby('Teacher')[selected_column].mean().reset_index()
-
-    # Sort descending (best first)
     teacher_scores = teacher_scores.sort_values(selected_column, ascending=False)
-
-    # Show table (styled)
     st.markdown(teacher_scores.to_html(index=False, escape=False), unsafe_allow_html=True)
 
     # --- Section Divider ---
     st.markdown("<hr style='border: 1px solid #0D47A1;'>", unsafe_allow_html=True)
 
-    # 🏆 Best Teacher from Each Grade (Average across all 18 questions)
-    st.markdown("<p class='subheader'>🌟 Best Teachers from Each Grade (Overall Average)</p>", unsafe_allow_html=True)
+    # 🌟 Best Teachers from Each Grade (Weighted Average)
+    st.markdown("<p class='subheader'>🌟 Best Teachers from Each Grade (Weighted Average)</p>", unsafe_allow_html=True)
 
-    # Calculate average for all 18 questions (cols 3 onwards)
+    # Compute weighted average
     question_columns = df.columns[3:]
-    df['Overall_Average'] = df[question_columns].mean(axis=1)
+    rating_columns = [col for col in question_columns if df[col].dropna().between(1, 5).all()]
 
-    # Group by Grade and Teacher and calculate average per teacher per grade
-    grade_teacher_avg = df.groupby(['Grade', 'Teacher'])['Overall_Average'].mean().reset_index()
+    if 'Weight' in df.columns:
+        weight_col = df['Weight']
+    else:
+        weight_col = pd.Series(1, index=df.index)
 
-    # Find top teacher for each grade
-    best_teachers_per_grade = grade_teacher_avg.loc[grade_teacher_avg.groupby('Grade')['Overall_Average'].idxmax()]
+    weighted_scores = df[rating_columns].multiply(weight_col, axis=0)
+    df['Weighted_Average'] = weighted_scores.sum(axis=1) / weight_col.sum()
 
-    # Display table
+    grade_teacher_avg = df.groupby(['Grade', 'Teacher'])['Weighted_Average'].mean().reset_index()
+    best_teachers_per_grade = grade_teacher_avg.loc[grade_teacher_avg.groupby('Grade')['Weighted_Average'].idxmax()]
+
     st.markdown(best_teachers_per_grade.to_html(index=False, escape=False), unsafe_allow_html=True)
 
     # --- Section Divider ---
     st.markdown("<hr style='border: 1px solid #0D47A1;'>", unsafe_allow_html=True)
 
-    # 👑 Best Teachers Overall (Across All Grades & All Questions)
-    st.markdown("<p class='subheader'>🏅 Top Teachers Overall (All Grades, All Questions)</p>", unsafe_allow_html=True)
+    # 🏅 Top Teachers Overall (Weighted)
+    st.markdown("<p class='subheader'>🏅 Top Teachers Overall (All Grades, Weighted)</p>", unsafe_allow_html=True)
 
-    # Group by Teacher (ignore grade) and calculate overall average
-    overall_teacher_avg = df.groupby('Teacher')['Overall_Average'].mean().reset_index()
-
-    # Sort descending
-    overall_teacher_avg = overall_teacher_avg.sort_values('Overall_Average', ascending=False)
-
-    # Display table
+    overall_teacher_avg = df.groupby('Teacher')['Weighted_Average'].mean().reset_index()
+    overall_teacher_avg = overall_teacher_avg.sort_values('Weighted_Average', ascending=False)
     st.markdown(overall_teacher_avg.to_html(index=False, escape=False), unsafe_allow_html=True)
 
-    # --- Footer ---
+    # Footer
     st.markdown("---")
     st.markdown("<p style='text-align:center; color:gray;'>Designed by Ammon - Data Analyst 2025</p>", unsafe_allow_html=True)

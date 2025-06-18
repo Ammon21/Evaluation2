@@ -93,7 +93,7 @@ def radar_dashboard():
     """, unsafe_allow_html=True)
 
     # Load the dataset from CSV
-    df = pd.read_csv('eval.csv', encoding='cp1252')
+    df = pd.read_csv('eval3.csv', encoding='cp1252')
 
     # Teacher selection dropdown
     teacher_list = df['Teacher'].unique()
